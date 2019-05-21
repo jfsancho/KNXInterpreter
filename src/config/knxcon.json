@@ -1,0 +1,6 @@
+{
+    "ipAddr": "127.0.0.1",
+    "ipPort": 3671,
+    "physAddr": "15.15.15",
+    "minDelay" : 10
+}   
