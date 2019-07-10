@@ -34,7 +34,7 @@ class LogicManager {
     constructor(){
         
         if (!!LogicManager.instance) {
-            console.log('Hola')
+            
             return LogicManager.instance;
         }
 
@@ -120,7 +120,7 @@ class LogicManager {
     }
 
     createProcessThread(proc){
-
+        console.log(proc.PROCreadType);
         let thread=Object.create(null);
         thread={
             process:proc,
@@ -139,12 +139,11 @@ class LogicManager {
                 }
             },
             onChange(t){
-                if(t.KNXdpt.conn.status==='connected'){
-                    console.log('before read');
+                if(t.KNXdpt.conn.state==='idle'){
                     t.KNXdpt.read((src,response)=> t.verifyValues(response,t));}
             },
             cycleRead(t){
-                if(t.KNXdpt.conn.status==='connected'){
+                if(t.KNXdpt.conn.state==='idle'){
                     t.KNXdpt.read((src,response)=> t.setValues(response,t))}
             }
         }
@@ -153,7 +152,7 @@ class LogicManager {
 
         if (thread.process.PROCreadType===constants.PROCreadType.ONCHANGE){
             func=thread.onChange;
-            time=1000;
+            time=5000;
         }
         else{
             func=thread.cycleRead;
@@ -275,24 +274,50 @@ class LogicManager {
         }
     }
 
-    readDEV(devId,callback){
-        let KNXdpt=LogicManager.instance.getKNXdpt(devId);
+    readDEV(dev,callback){
+        let KNXdpt=LogicManager.instance.getKNXdpt(dev);
         if(KNXdpt){
-            KNXdpt.read((src,response)=>{callback(response)});
+            
+            KNXdpt.read((src,response)=>{
+                console.log(response);
+                
+                callback({value:response,devId:dev});
+            });
         }
         else{
-            callback('El dispositivo '+ devID + 'no existe');
+            callback({value:'El dispositivo '+ devID + 'no existe'});
         }
     }
 
     writeDEV(devId,value,callback){
         let KNXdpt=LogicManager.instance.getKNXdpt(devId);
         if(KNXdpt){
+            console.log('valor: '+value);
             KNXdpt.write(value);
         }
         else{
-            callback('El dispositivo '+ devID + 'no existe');
+            callback({msg:'El dispositivo '+ devID + 'no existe'});
         }
+    }
+
+    updateDEV(device){
+        let dev= LogicManager.instance.getDEV(device.DEVgroupAddress);
+        dev.DEVstatusAddress=device.DEVstatusAddress;
+        dev.DEVconnection=device.DEVconnection;
+        dev.DEVdescription=device.DEVdescription;
+        dev.DEVdatapoint=device.DEVdatapoint;
+        console.log(dev);
+    }
+
+    createDEV(device){
+        let dev={
+            DEVgroupAddress: device.DEVgroupAddress,
+            DEVstatusAddress:device.DEVstatusAddress,
+            DEVconnection:device.DEVconnection,
+            DEVdescription:device.DEVdescription,
+            DEVdatapoint:device.DEVdatapoint
+        }
+        LogicManager.instance.devList.push(dev);
     }
 
 

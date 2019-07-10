@@ -12,19 +12,21 @@ ipAddr: '192.168.0.15', ipPort: 3671,
 // the KNX physical address we'd like to use
 physAddr: '1.1.5',
 // set the log level for messsages printed on the console. This can be 'error', 'warn', 'info' (default), 'debug', or 'trace'.
-loglevel: 'info',
+loglevel: 'trace',
 // do not automatically connect, but use connection.Connect() to establish connection
 manualConnect: false,  
 // use tunneling with multicast (router) - this is NOT supported by all routers! See README-resilience.md
-forceTunneling: true,
+forceTunneling: false,
 // wait at least 10 millisec between each datagram
 minimumDelay: 10,
 // enable this option to suppress the acknowledge flag with outgoing L_Data.req requests. LoxOne needs this
-//suppress_ack_ldatareq: false,
+suppress_ack_ldatareq: true,
 // define your event handlers here:
  handlers: {
   connected: function() {
     console.log('Connected!');
+    console.log(connection.state);
+    
   },
   event: function (evt, src, dest, value) {
   console.log("%s **** KNX EVENT: %j, src: %j, dest: %j, value: %j",
@@ -38,10 +40,12 @@ minimumDelay: 10,
  }
 
 });
+console.log(connection.state);
 
-var binary_control = new knx.Datapoint({ga: '1/0/1', dpt: 'DPT1.001'});
+setTimeout(()=>console.log(connection.state),20000);
 
-console.log(binary_control);
+//var binary_control = new knx.Datapoint({ga: '1/0/1', dpt: 'DPT1.001'});
+
 
 
 

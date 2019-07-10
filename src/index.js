@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import bodyParser from 'body-parser';
 
 import cors from 'cors';
@@ -17,10 +16,10 @@ let seti = setInterval((a)=>{if(!a.ready){
 
 var express = require('express'),
   app = express(),
-  port = process.env.PORT || 3000;
+  port = process.env.PORT || 3001;
 
 
-//app.use(cors());
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/devices', routes.device);

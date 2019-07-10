@@ -12,19 +12,38 @@ router.get('/', (req, res) => {
 
 // /devices/dev
 
-router.get('/dev', (req, res) => {
-    //req.params.devId
-    let response= LM.getDEV(req.body.devId);
-    res.send('\n'+JSON.stringify(response, null, 2)+'\n');
+router.post('/dev', (req, res) => {
+  //no funciona correctamente el promise
+  new Promise(function(resolve, reject) {
+    LM.dbManager.insertDEV(req.body,{callback:LM.createDEV, item:req.body})
+    resolve({msg:'dispositivo: '+req.body.DEVgroupAddress + ', creado'});
+    }).then(response=>{
+      res.send(response);
+    }).catch(err=>{
+      res.send({msg:'dispositivo: '+req.body.DEVgroupAddress + ', no se pudo crear',
+              error: err});
+    })
+
   });
   
-router.post('/dev', (req, res) => {
+router.post('/dev/get', (req, res) => {
   let response= LM.getDEV(req.body.devId);
-  res.send('\n'+JSON.stringify(response, null, 2)+'\n');
+  res.send(response);
   });
   
 router.put('/dev', (req, res) => {
-    return res.send('\n dispositivo: '+req.body.devID + ', actualizado \n');
+  new Promise(function(resolve, reject) {
+    //console.log(typeof {callback: LM.updateDEV, item:req.body})
+    
+    LM.dbManager.updateDEV(req.body,{callback:LM.updateDEV, item:req.body})
+    resolve({msg:'dispositivo: '+req.body.DEVgroupAddress + ', actualizado'});
+  }).then(response=>{
+    res.send(response);
+  }).catch(err=>{
+    res.send({msg:'dispositivo: '+req.body.DEVgroupAddress + ', no se pudo actualizar',
+              error: err});
+  })
+    
 });
   
 router.delete('/dev', (req, res) => {
@@ -32,22 +51,30 @@ router.delete('/dev', (req, res) => {
 }); 
 
 // /device/dev/read
-router.get('/dev/read', (req, res) => {
-  let response={
-    devId:req.body.devId,
-    valor: true
-  }
-  res.send('\n'+JSON.stringify(response, null, 2)+'\n')
-  //LM.readDEV(req.params.devID,res.send);
-  });
+router.post('/dev/read', (req, res) => {
+  //LM.readDEV(req.body.devId,res.send);
+  let KNXdpt=LogicManager.instance.getKNXdpt(req.body.devId);
+        if(KNXdpt){
+            
+            KNXdpt.read((src,response)=>{
+                console.log(response);
+                
+                res.send({value:response,devId:req.body.devId});
+            });
+        }
+        else{
+            res.send({value:'El dispositivo '+ devID + 'no existe'});
+        }
+});
   
 // /device/dev/write
 router.post('/dev/write', (req, res) => {
   if(!req.body.devId||!req.body.value){
-      res.send('Faltan argumentos');
+      res.send({msg:'Faltan argumentos'});
   }else{
-    res.send('\n Valor: '+req.body.value+ ' escrito en dispositivo '+req.body.devId+'\n')
-    //LM.writeDEV(req.body.devId,req.body.value,res.send);
+    LM.writeDEV(req.body.devId,req.body.value,res.send);
+    
+    res.send({msg: 'Valor: '+req.body.value+ ' escrito en dispositivo '+req.body.devId});
   }
      
   });

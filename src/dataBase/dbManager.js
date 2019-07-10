@@ -43,15 +43,18 @@ class dbManager{
   };
 
   doQuery(sql,callback){
-    this.mysqlCon.query(sql, function (err, rows) {
+    this.mysqlCon.query(sql, function (err, rows, fields) {
       
       if (err) throw err;
       rows=JSON.parse(JSON.stringify(rows));
-
-      if(callback){
+      console.log(callback);
+      if(typeof callback==='function'){
         callback(rows);
       }
-      console.log("1 record inserted"); 
+      else if(typeof callback ==='object'){
+        callback.callback(callback.item);
+      }
+      console.log("1 record inserted");
     });
   }; 
 
